@@ -14,75 +14,103 @@ Globals:
         DYNAMODB_HOST_URL: "http://dynamodb-local-aftermint:8000"
 
 Resources:
-  AftermintFunction:
+  CommunitiesFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Properties:
-      CodeUri: AftermintFunction/
-      Handler: handler.lambda_handler
-      Runtime: python3.9
-      Architectures:
-        - x86_64
-      Events:
-        Login:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            Path: /login
-            Method: post
-        Logout:
-          Type: Api
-          Properties:
-            Path: /logout
-            Method: post
-        Communities:
+      Properties:
+        CodeUri: CommunitiesFunction/
+        Handler: handler.lambda_handler
+        Runtime: python3.9
+        Architectures:
+          - x86_64
+        Events:
+          Communities:
           Type: Api
           Properties:
             Path: /communities
             Method: get
-        CommunityInfo:
-          Type: Api
-          Properties:
-            Path: /communities/{community}
-            Method: get
-        CommunityPostsGet:
-          Type: Api
-          Properties:
-            Path: /communities/{community}/posts
-            Method: get
-        CommunityPostsPost:
-          Type: Api
-          Properties:
-            Path: /communities/{community}/posts
-            Method: post
-        CommunityRewardsGet:
-          Type: Api
-          Properties:
-            Path: /communities/{community}/rewards
-            Method: get
-        CommunityRewardsPost:
-          Type: Api
-          Properties:
-            Path: /communities/{community}/rewards
-            Method: post
-        RewardInfo:
-          Type: Api
-          Properties:
-            Path: /communities/{community}/rewards/{rewardId}
-            Method: get
-        RewardSubmitEntry:
-          Type: Api
-          Properties:
-            Path: /communities/{community}/rewards/{rewardId}/submit
-            Method: post
-        HealthCheck:
-          Type: Api
-          Properties:
-            Path: /health
-            Method: get
-        PreflightHandler:
-          Type: Api
-          Properties:
-            Path: /{proxy+}
-            Method: options
+          CommunityInfo:
+            Type: Api
+            Properties:
+              Path: /communities/{community}
+              Method: get
+  PostsFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+      Properties:
+        CodeUri: PostsFunction/
+        Handler: handler.lambda_handler
+        Runtime: python3.9
+        Architectures:
+          - x86_64
+        Events:
+          GetPosts:
+            Type: Api
+            Properties:
+              Path: /communities/{community}/posts
+              Method: get
+          CreateNewPost:
+            Type: Api
+            Properties:
+              Path: /communities/{community}/posts
+              Method: post
+    
+  RewardsFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+      Properties:
+        CodeUri: RewardsFunction/
+        Handler: handler.lambda_handler
+        Runtime: python3.9
+        Architectures:
+          - x86_64
+        Events:
+          GetRewards:
+            Type: Api
+            Properties:
+              Path: /communities/{community}/rewards
+              Method: get
+          CreateNewReward:
+            Type: Api
+            Properties:
+              Path: /communities/{community}/rewards
+              Method: post
+          GetRewardInfo:
+            Type: Api
+            Properties:
+              Path: /communities/{community}/rewards/{rewardId}
+              Method: get
+          RewardSubmitEntry:
+            Type: Api
+            Properties:
+              Path: /communities/{community}/rewards/{rewardId}/submit
+              Method: post
+  SessionsFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+      Properties:
+        CodeUri: SessionsFunction/
+        Handler: handler.lambda_handler
+        Runtime: python3.9
+        Architectures:
+          - x86_64
+        Events:
+          Login:
+            Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+            Properties:
+              Path: /login
+              Method: post
+          Logout:
+            Type: Api
+            Properties:
+              Path: /logout
+              Method: post
+  AftermintLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: aftermint-layer
+      Description: Dependecies for Aftermint lambdas
+      ContentUri: AftermintLayer/
+      CompatibleRuntimes:
+        - python3.9
+      RetentionPolicy: Retain
+
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function

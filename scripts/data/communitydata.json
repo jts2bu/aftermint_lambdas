@@ -1,0 +1,14 @@
+{
+    "data": [
+        {
+            "community_ticker": "EMOBUDDIES",
+            "community_name": "EMO BUDDIES",
+            "owners": ["0xB3FDf3A4aC48320463E9d7697Fa55b4219b28393", "0x073bEa47A7e19A1f6c7db3E6f7892821a2e32C60"]
+        },
+        {
+            "community_ticker": "LOSMUERTOS",
+            "community_name": "Los Muertos",
+            "owners": ["0x073bEa47A7e19A1f6c7db3E6f7892821a2e32C60"]
+        }
+    ]
+}

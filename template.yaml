@@ -1,9 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: >
-  sam-app
-
-  Sample SAM Template for sam-app
+Description: Cloudformation stack for the Aftermint backend
 
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
@@ -12,95 +9,131 @@ Globals:
     Environment:
       Variables:
         DYNAMODB_HOST_URL: "http://dynamodb-local-aftermint:8000"
+  Api:
+    Cors:
+      AllowMethods: "'OPTIONS,GET,PUT,POST,DELETE'"
+      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+      AllowOrigin: "'*'"
 
 Resources:
   CommunitiesFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-      Properties:
-        CodeUri: CommunitiesFunction/
-        Handler: handler.lambda_handler
-        Runtime: python3.9
-        Architectures:
-          - x86_64
-        Events:
-          Communities:
+    Properties:
+      CodeUri: CommunitiesFunction/
+      Handler: handler.lambda_handler
+      Runtime: python3.9
+      Layers:
+        - !Ref AftermintLayer
+      Architectures:
+        - x86_64
+      Events:
+        Communities:
           Type: Api
           Properties:
             Path: /communities
             Method: get
-          CommunityInfo:
-            Type: Api
-            Properties:
-              Path: /communities/{community}
-              Method: get
+        CommunityInfo:
+          Type: Api
+          Properties:
+            Path: /communities/{community}
+            Method: get
+        Health:
+          Type: Api
+          Properties:
+            Path: /communities_health
+            Method: get
+              
   PostsFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-      Properties:
-        CodeUri: PostsFunction/
-        Handler: handler.lambda_handler
-        Runtime: python3.9
-        Architectures:
-          - x86_64
-        Events:
-          GetPosts:
-            Type: Api
-            Properties:
-              Path: /communities/{community}/posts
-              Method: get
-          CreateNewPost:
-            Type: Api
-            Properties:
-              Path: /communities/{community}/posts
-              Method: post
+    Properties:
+      CodeUri: PostsFunction/
+      Handler: handler.lambda_handler
+      Runtime: python3.9
+      Layers:
+        - !Ref AftermintLayer
+      Architectures:
+        - x86_64
+      Events:
+        GetPosts:
+          Type: Api
+          Properties:
+            Path: /communities/{community}/posts
+            Method: get
+        CreateNewPost:
+          Type: Api
+          Properties:
+            Path: /communities/{community}/posts
+            Method: post
+        Health:
+          Type: Api
+          Properties:
+            Path: /posts_health
+            Method: get
     
   RewardsFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-      Properties:
-        CodeUri: RewardsFunction/
-        Handler: handler.lambda_handler
-        Runtime: python3.9
-        Architectures:
-          - x86_64
-        Events:
-          GetRewards:
-            Type: Api
-            Properties:
-              Path: /communities/{community}/rewards
-              Method: get
-          CreateNewReward:
-            Type: Api
-            Properties:
-              Path: /communities/{community}/rewards
-              Method: post
-          GetRewardInfo:
-            Type: Api
-            Properties:
-              Path: /communities/{community}/rewards/{rewardId}
-              Method: get
-          RewardSubmitEntry:
-            Type: Api
-            Properties:
-              Path: /communities/{community}/rewards/{rewardId}/submit
-              Method: post
+    Properties:
+      CodeUri: RewardsFunction/
+      Handler: handler.lambda_handler
+      Runtime: python3.9
+      Layers:
+        - !Ref AftermintLayer
+      Architectures:
+        - x86_64
+      Events:
+        GetRewards:
+          Type: Api
+          Properties:
+            Path: /communities/{community}/rewards
+            Method: get
+        CreateNewReward:
+          Type: Api
+          Properties:
+            Path: /communities/{community}/rewards
+            Method: post
+        GetRewardInfo:
+          Type: Api
+          Properties:
+            Path: /communities/{community}/rewards/{rewardId}
+            Method: get
+        RewardSubmitEntry:
+          Type: Api
+          Properties:
+            Path: /communities/{community}/rewards/{rewardId}/submit
+            Method: post
+        Health:
+          Type: Api
+          Properties:
+            Path: /rewards_health
+            Method: get
+
   SessionsFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-      Properties:
-        CodeUri: SessionsFunction/
-        Handler: handler.lambda_handler
-        Runtime: python3.9
-        Architectures:
-          - x86_64
-        Events:
-          Login:
-            Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-            Properties:
-              Path: /login
-              Method: post
-          Logout:
-            Type: Api
-            Properties:
-              Path: /logout
-              Method: post
+    Properties:
+      CodeUri: SessionsFunction/
+      Handler: handler.lambda_handler
+      Runtime: python3.9
+      Layers:
+        - !Ref AftermintLayer
+      Architectures:
+        - x86_64
+      Events:
+        Login:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /login
+            Method: post
+        Logout:
+          Type: Api
+          Properties:
+            Path: /logout
+            Method: post
+        Health:
+          Type: Api
+          Properties:
+            Path: /sessions_health
+            Method: get
+
   AftermintLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
@@ -117,11 +150,17 @@ Outputs:
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
   AftermintAPI:
-    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  AftermintFunction:
-    Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt AftermintFunction.Arn
-  AftermintFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt AftermintFunctionRole.Arn
+    Description: "API Gateway endpoint URL for Prod stage for Aftermint Functions"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
+  RewardsFunction:
+    Description: "Aftermint Rewards Lambda Function"
+    Value: !GetAtt RewardsFunction.Arn
+  CommunitiesFunction:
+    Description: "Aftermint Communities Lambda Function"
+    Value: !GetAtt CommunitiesFunction.Arn
+  PostsFunction:
+    Description: "Aftermint Posts Lambda Function"
+    Value: !GetAtt PostsFunction.Arn
+  SessionsFunction:
+    Description: "Aftermint Sessions  Lambda Function"
+    Value: !GetAtt SessionsFunction.Arn

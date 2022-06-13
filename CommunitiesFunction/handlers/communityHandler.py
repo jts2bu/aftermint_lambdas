@@ -1,4 +1,4 @@
-from services.sessionService import isCommunityMember, parseJWT
+from functions.session import isCommunityMember, parseJWT
 from utils.constants import AUTHORIZATION, JWT_ALGORITHM, JWT_SECRET
 from aws_lambda_powertools.event_handler.exceptions import UnauthorizedError, BadRequestError
 from services.communityService import getCommunitiesInfoForWalletFromLocal, getCommunityInfoForTicker
@@ -8,6 +8,8 @@ import jwt
 class CommunityHandler:
     def getCommunities(self, request):
         cookie = cookies.SimpleCookie()
+        if request.headers['Cookie'] is None:
+            raise BadRequestError("Cookie not found")
         cookie.load(request.headers['Cookie'])
         if cookie['token'].value == None:
             raise UnauthorizedError("Authentication token not found")
@@ -25,6 +27,8 @@ class CommunityHandler:
     
     def getCommunityInfo(self, request, community):
         cookie = cookies.SimpleCookie()
+        if request.headers['Cookie'] is None:
+            raise BadRequestError("Cookie not found")
         cookie.load(request.headers['Cookie'])
         if cookie['token'].value == None:
             raise UnauthorizedError("Authentication token not found")

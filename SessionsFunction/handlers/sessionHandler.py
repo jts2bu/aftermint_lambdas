@@ -1,6 +1,8 @@
+import json
 from uuid import uuid4
 from models.session import Session
-from services.sessionService import getCommunityTickersForWalletFromRemote, getJWT, validateSignature, getMembershipAndOwnership, parseJWT
+from services.sessionService import getCommunityTickersForWalletFromRemote, validateSignature
+from functions.session import getJWT, getMembershipAndOwnership
 
 from utils.constants import CHAIN_ID, MSG_SIGNATURE, WALLET_ADDRESS, JWT_ALGORITHM, JWT_SECRET
 from aws_lambda_powertools.event_handler.exceptions import BadRequestError, InternalServerError, UnauthorizedError
@@ -9,15 +11,17 @@ import jwt
 
 class SessionHandler:
     def login(self, request):
-        wallet = request.json_body.get(WALLET_ADDRESS)
-        signature = request.json_body.get(MSG_SIGNATURE)
-        chain_id = request.json_body.get(CHAIN_ID)
+        try:
+            wallet = request.json_body.get(WALLET_ADDRESS)
+            signature = request.json_body.get(MSG_SIGNATURE)
+        except:
+            raise BadRequestError("Missing body parameter")
         
-        if (wallet == None or signature == None or chain_id == None):
+        if (wallet == None or signature == None):
             raise BadRequestError("Missing body parameter")
 
         if validateSignature(wallet, signature):
-            all_tickers = getCommunityTickersForWalletFromRemote(wallet, chain_id)
+            all_tickers = getCommunityTickersForWalletFromRemote(wallet)
             wallet_membership, wallet_ownership = getMembershipAndOwnership(wallet, all_tickers)
             session_id = uuid4()
             jwt_token = getJWT(walletAddress=wallet, session=str(session_id), membership=wallet_membership, ownership=wallet_ownership)
@@ -30,6 +34,8 @@ class SessionHandler:
     
     def logout(self, request):
         cookie = cookies.SimpleCookie()
+        if request.headers['Cookie'] is None:
+            raise BadRequestError("Cookie not found")
         cookie.load(request.headers['Cookie'])
         if cookie['token'].value == None:
             raise UnauthorizedError("Authentication token not found")

@@ -1,7 +1,7 @@
 from utils.constants import AUTHORIZATION, JWT_ALGORITHM, JWT_SECRET
 from aws_lambda_powertools.event_handler.exceptions import UnauthorizedError, BadRequestError
 from services.rewardService import getRewardsForCommunity, getRewardInfo, createRewardForCommunity, addEntryToReward
-from services.sessionService import isCommunityMember, isCommunityOwner, parseJWT
+from functions.session import isCommunityMember, isCommunityOwner, parseJWT
 
 from http import cookies
 import jwt
@@ -9,6 +9,8 @@ import jwt
 class RewardHandler:
     def getRewards(self, request, community):
         cookie = cookies.SimpleCookie()
+        if request.headers['Cookie'] is None:
+            raise BadRequestError("Cookie not found")
         cookie.load(request.headers['Cookie'])
         if cookie['token'].value == None:
             raise UnauthorizedError("Authentication token not found")
@@ -26,6 +28,8 @@ class RewardHandler:
     
     def createReward(self, request, community):
         cookie = cookies.SimpleCookie()
+        if request.headers['Cookie'] is None:
+            raise BadRequestError("Cookie not found")
         cookie.load(request.headers['Cookie'])
         if cookie['token'].value == None:
             raise UnauthorizedError("Authentication token not found")
@@ -44,6 +48,8 @@ class RewardHandler:
     
     def getRewardInfo(self, request, community, reward):
         cookie = cookies.SimpleCookie()
+        if request.headers['Cookie'] is None:
+            raise BadRequestError("Cookie not found")
         cookie.load(request.headers['Cookie'])
         if cookie['token'].value == None:
             raise UnauthorizedError("Authentication token not found")
@@ -62,6 +68,8 @@ class RewardHandler:
     
     def submitEntry(self, request, community, reward):
         cookie = cookies.SimpleCookie()
+        if request.headers['Cookie'] is None:
+            raise BadRequestError("Cookie not found")
         cookie.load(request.headers['Cookie'])
         if cookie['token'].value == None:
             raise UnauthorizedError("Authentication token not found")

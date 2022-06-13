@@ -1,5 +1,0 @@
-requests
-aws-lambda-powertools
-pynamodb
-pyjwt
-web3

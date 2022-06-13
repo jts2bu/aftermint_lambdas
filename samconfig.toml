@@ -2,9 +2,9 @@ version = 0.1
 [default]
 [default.deploy]
 [default.deploy.parameters]
-stack_name = "aftermint"
+stack_name = "aftermint-app"
 s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-1mh7i7uyxkzj1"
-s3_prefix = "aftermint"
+s3_prefix = "aftermint-app"
 region = "us-east-1"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"

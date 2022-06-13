@@ -3,17 +3,19 @@ from uuid import uuid4
 from models.post import Post
 
 
-def getPostsForCommunity(community):
+def getPostsForCommunity(community, user_is_member):
     posts_info = []
     for post in Post.query(community):
-        posts_info.append(
-            {
-                "id": post.post_id,
-                "title": post.title,
-                "body": post.body,
-                "creation_date": post.creation_date
-            }
-        )
+        if user_is_member or not post.private:
+            posts_info.append(
+                {
+                    "id": post.post_id,
+                    "title": post.title,
+                    "body": post.body,
+                    "creation_date": post.creation_date,
+                    "private": post.private
+                }
+            )
     return posts_info
 
 def createPostForCommunity(community, data):
@@ -25,5 +27,6 @@ def createPostForCommunity(community, data):
         "id": post.post_id,
         "title": post.title,
         "body": post.body,
-        "creation_date": post.creation_date
+        "creation_date": post.creation_date,
+        "private": post.private
     }

@@ -1,6 +1,6 @@
 from pynamodb.models import Model
 from pynamodb.attributes import (
-    UnicodeAttribute, NumberAttribute, UnicodeSetAttribute, UTCDateTimeAttribute, JSONAttribute
+    UnicodeAttribute, NumberAttribute, UnicodeSetAttribute, UTCDateTimeAttribute, JSONAttribute, BooleanAttribute
 )
 from utils.envar import getEnvironmentVariable
 from utils.constants import DYNAMODB_HOST_URL, DYNAMODB_POST_TABLE_NAME
@@ -16,3 +16,4 @@ class Post(Model):
     title = UnicodeAttribute()
     body = UnicodeAttribute(null=True)
     creation_date = UTCDateTimeAttribute()
+    private = BooleanAttribute()

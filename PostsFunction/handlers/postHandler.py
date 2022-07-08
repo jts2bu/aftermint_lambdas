@@ -8,8 +8,10 @@ import jwt
 class PostHandler:
     def getPosts(self, request, community):
         cookie = cookies.SimpleCookie()
+        if 'Cookie' not in request.headers:
+            raise UnauthorizedError("Cookie not found")
         if request.headers['Cookie'] is None:
-            raise BadRequestError("Cookie not found")
+            raise UnauthorizedError("Cookie not found")
         cookie.load(request.headers['Cookie'])
         if cookie['token'].value == None:
             raise UnauthorizedError("Authentication token not found")
@@ -29,8 +31,10 @@ class PostHandler:
     
     def createPost(self, request, community):
         cookie = cookies.SimpleCookie()
+        if 'Cookie' not in request.headers:
+            raise UnauthorizedError("Cookie not found")
         if request.headers['Cookie'] is None:
-            raise BadRequestError("Cookie not found")
+            raise UnauthorizedError("Cookie not found")
         cookie.load(request.headers['Cookie'])
         if cookie['token'].value == None:
             raise UnauthorizedError("Authentication token not found")

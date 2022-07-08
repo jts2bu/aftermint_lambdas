@@ -9,8 +9,10 @@ import jwt
 class RewardHandler:
     def getRewards(self, request, community):
         cookie = cookies.SimpleCookie()
+        if 'Cookie' not in request.headers:
+            raise UnauthorizedError("Cookie not found")
         if request.headers['Cookie'] is None:
-            raise BadRequestError("Cookie not found")
+            raise UnauthorizedError("Cookie not found")
         cookie.load(request.headers['Cookie'])
         if cookie['token'].value == None:
             raise UnauthorizedError("Authentication token not found")
@@ -28,8 +30,10 @@ class RewardHandler:
     
     def createReward(self, request, community):
         cookie = cookies.SimpleCookie()
+        if 'Cookie' not in request.headers:
+            raise UnauthorizedError("Cookie not found")
         if request.headers['Cookie'] is None:
-            raise BadRequestError("Cookie not found")
+            raise UnauthorizedError("Cookie not found")
         cookie.load(request.headers['Cookie'])
         if cookie['token'].value == None:
             raise UnauthorizedError("Authentication token not found")
@@ -48,8 +52,10 @@ class RewardHandler:
     
     def getRewardInfo(self, request, community, reward):
         cookie = cookies.SimpleCookie()
+        if 'Cookie' not in request.headers:
+            raise UnauthorizedError("Cookie not found")
         if request.headers['Cookie'] is None:
-            raise BadRequestError("Cookie not found")
+            raise UnauthorizedError("Cookie not found")
         cookie.load(request.headers['Cookie'])
         if cookie['token'].value == None:
             raise UnauthorizedError("Authentication token not found")
@@ -68,8 +74,10 @@ class RewardHandler:
     
     def submitEntry(self, request, community, reward):
         cookie = cookies.SimpleCookie()
+        if 'Cookie' not in request.headers:
+            raise UnauthorizedError("Cookie not found")
         if request.headers['Cookie'] is None:
-            raise BadRequestError("Cookie not found")
+            raise UnauthorizedError("Cookie not found")
         cookie.load(request.headers['Cookie'])
         if cookie['token'].value == None:
             raise UnauthorizedError("Authentication token not found")

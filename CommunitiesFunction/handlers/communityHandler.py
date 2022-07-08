@@ -8,8 +8,10 @@ import jwt
 class CommunityHandler:
     def getCommunities(self, request):
         cookie = cookies.SimpleCookie()
+        if 'Cookie' not in request.headers:
+            raise UnauthorizedError("Cookie not found")
         if request.headers['Cookie'] is None:
-            raise BadRequestError("Cookie not found")
+            raise UnauthorizedError("Cookie not found")
         cookie.load(request.headers['Cookie'])
         if cookie['token'].value == None:
             raise UnauthorizedError("Authentication token not found")
@@ -27,15 +29,17 @@ class CommunityHandler:
     
     def getCommunityInfo(self, request, community):
         cookie = cookies.SimpleCookie()
+        if 'Cookie' not in request.headers:
+            raise UnauthorizedError("Cookie not found")
         if request.headers['Cookie'] is None:
-            raise BadRequestError("Cookie not found")
+            raise UnauthorizedError("Cookie not found")
         cookie.load(request.headers['Cookie'])
         if cookie['token'].value == None:
             raise UnauthorizedError("Authentication token not found")
         try:
             token_decoded = jwt.decode(cookie['token'].value, JWT_SECRET, JWT_ALGORITHM)
         except:
-            raise BadRequestError("Token not formatted properly")
+            raise UnauthorizedError("Token not formatted properly")
         if (token_decoded['wallet'] == None or token_decoded['session'] == None or token_decoded['membership'] == None or token_decoded['ownership'] == None):
             raise UnauthorizedError("Authorization token missing parameters")
         if not isCommunityMember(token_decoded['wallet'], token_decoded['session'], community):

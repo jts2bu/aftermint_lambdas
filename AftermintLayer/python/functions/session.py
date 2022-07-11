@@ -4,6 +4,7 @@ from web3.auto import w3
 from eth_account.messages import encode_defunct
 from aws_lambda_powertools.event_handler.exceptions import UnauthorizedError, BadRequestError
 from functions.community import isWalletOwner, communityExists
+from http import cookies
 
 import jwt
 
@@ -60,3 +61,18 @@ def isCommunityOwner(walletAddress, session, community):
         return community in active_session.ownership
     except Exception as error:
         return False
+
+def parseRequestCookieForVerifiedToken(request):
+    cookie = cookies.SimpleCookie()
+    if 'Cookie' not in request.headers:
+        raise UnauthorizedError("Cookie not found")
+    cookie.load(request.headers['Cookie'])
+    if cookie['token'].value == None:
+        raise UnauthorizedError("Authentication token not found")
+    try:
+        token_decoded = jwt.decode(cookie['token'].value, JWT_SECRET, JWT_ALGORITHM)
+    except:
+        raise BadRequestError("Token not formatted properly")
+    if (token_decoded['wallet'] == None or token_decoded['session'] == None or token_decoded['membership'] == None or token_decoded['ownership'] == None):
+        raise UnauthorizedError("Authorization token missing parameters")
+    return token_decoded

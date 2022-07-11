@@ -1,49 +1,21 @@
 from utils.constants import AUTHORIZATION, JWT_ALGORITHM, JWT_SECRET
 from aws_lambda_powertools.event_handler.exceptions import UnauthorizedError, BadRequestError
 from services.rewardService import getRewardsForCommunity, getRewardInfo, createRewardForCommunity, addEntryToReward
-from functions.session import isCommunityMember, isCommunityOwner, parseJWT
+from functions.session import isCommunityMember, isCommunityOwner, parseJWT, parseRequestCookieForVerifiedToken
 
 from http import cookies
 import jwt
 
 class RewardHandler:
     def getRewards(self, request, community):
-        cookie = cookies.SimpleCookie()
-        if 'Cookie' not in request.headers:
-            raise UnauthorizedError("Cookie not found")
-        if request.headers['Cookie'] is None:
-            raise UnauthorizedError("Cookie not found")
-        cookie.load(request.headers['Cookie'])
-        if cookie['token'].value == None:
-            raise UnauthorizedError("Authentication token not found")
-        try:
-            token_decoded = jwt.decode(cookie['token'].value, JWT_SECRET, JWT_ALGORITHM)
-        except:
-            raise BadRequestError("Token not formatted properly")
-        if (token_decoded['wallet'] == None or token_decoded['session'] == None or token_decoded['membership'] == None or token_decoded['ownership'] == None):
-            raise UnauthorizedError("Authorization token missing parameters")
-
+        token_decoded = parseRequestCookieForVerifiedToken(request)
         if not isCommunityMember(token_decoded['wallet'], token_decoded['session'], community):
             raise UnauthorizedError("No membership found for " + community)    
         rewards_info = getRewardsForCommunity(community)
         return {"rewards": rewards_info}, 200
     
     def createReward(self, request, community):
-        cookie = cookies.SimpleCookie()
-        if 'Cookie' not in request.headers:
-            raise UnauthorizedError("Cookie not found")
-        if request.headers['Cookie'] is None:
-            raise UnauthorizedError("Cookie not found")
-        cookie.load(request.headers['Cookie'])
-        if cookie['token'].value == None:
-            raise UnauthorizedError("Authentication token not found")
-        try:
-            token_decoded = jwt.decode(cookie['token'].value, JWT_SECRET, JWT_ALGORITHM)
-        except:
-            raise BadRequestError("Token not formatted properly")
-        if (token_decoded['wallet'] == None or token_decoded['session'] == None or token_decoded['membership'] == None or token_decoded['ownership'] == None):
-            raise UnauthorizedError("Authorization token missing parameters")
-
+        token_decoded = parseRequestCookieForVerifiedToken(request)
         body = request.json_body
         if not isCommunityOwner(token_decoded['wallet'], token_decoded['session'], community):
             raise UnauthorizedError("No ownership found for " + community)
@@ -51,21 +23,7 @@ class RewardHandler:
         return reward_info, 200
     
     def getRewardInfo(self, request, community, reward):
-        cookie = cookies.SimpleCookie()
-        if 'Cookie' not in request.headers:
-            raise UnauthorizedError("Cookie not found")
-        if request.headers['Cookie'] is None:
-            raise UnauthorizedError("Cookie not found")
-        cookie.load(request.headers['Cookie'])
-        if cookie['token'].value == None:
-            raise UnauthorizedError("Authentication token not found")
-        try:
-            token_decoded = jwt.decode(cookie['token'].value, JWT_SECRET, JWT_ALGORITHM)
-        except:
-            raise BadRequestError("Token not formatted properly")
-        if (token_decoded['wallet'] == None or token_decoded['session'] == None or token_decoded['membership'] == None or token_decoded['ownership'] == None):
-            raise UnauthorizedError("Authorization token missing parameters")
-       
+        token_decoded = parseRequestCookieForVerifiedToken(request)
         if not isCommunityMember(token_decoded['wallet'], token_decoded['session'], community):
             raise UnauthorizedError("No membership found for " + community)    
         reward_info = getRewardInfo(community, reward)
@@ -73,21 +31,7 @@ class RewardHandler:
         return reward_info, status_code
     
     def submitEntry(self, request, community, reward):
-        cookie = cookies.SimpleCookie()
-        if 'Cookie' not in request.headers:
-            raise UnauthorizedError("Cookie not found")
-        if request.headers['Cookie'] is None:
-            raise UnauthorizedError("Cookie not found")
-        cookie.load(request.headers['Cookie'])
-        if cookie['token'].value == None:
-            raise UnauthorizedError("Authentication token not found")
-        try:
-            token_decoded = jwt.decode(cookie['token'].value, JWT_SECRET, JWT_ALGORITHM)
-        except:
-            raise BadRequestError("Token not formatted properly")
-        if (token_decoded['wallet'] == None or token_decoded['session'] == None or token_decoded['membership'] == None or token_decoded['ownership'] == None):
-            raise UnauthorizedError("Authorization token missing parameters")
-
+        token_decoded = parseRequestCookieForVerifiedToken(request)
         wallet = request.json_body['wallet_address']
         if not isCommunityMember(token_decoded['wallet'], token_decoded['session'], community):
             raise UnauthorizedError("No membership found for " + community)
